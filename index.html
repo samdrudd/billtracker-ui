@@ -32,10 +32,10 @@
             var container = $('#transactionsContainer');
             container.empty(); // Clear existing transactions
 
-            // Add transactions that repeat weekly
+            // Update transaction dates before sorting
             transactions.forEach(function(transaction) {
+                // If the transaction repeats weekly, determine which dates will occur within the current month
                 if (transaction.Repeats === "Weekly") {
-                    // Get dates this transaction will repeat in the current month
                     var currentDate = new Date();
                     var lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
                     var startDate = new Date(transaction.Date);
@@ -58,7 +58,8 @@
                             return t._id !== transaction._id;
                         });
                     } else {
-                        // Set the date of the current transaction object to the first valid date
+                        // Set the date of the current transaction object to the first valid date (keep the starting date)
+                        transaction.StartsOn = transaction.Date;
                         transaction.Date = dates[0];
 
                         // If there are multiple valid dates, create a new transaction object for each date
@@ -69,20 +70,28 @@
                         }
                     }
                 }
+
+                // If the transaction is monthly, update the date to the corresponding day of the current month
+                if (transaction.Repeats === "Monthly") {
+                    transaction.StartsOn = transaction.Date;
+                    transaction.Date = new Date(new Date().getFullYear(), new Date().getMonth(), transaction.RepeatsOn);
+                }
             });
             
             transactions.sort(function(a, b) {
                 return new Date(a.Date) - new Date(b.Date);
             });
 
-            var today = new Date().getDate();
+            var today = new Date();
 
             transactions.forEach(function(transaction) {
-                // Don't show monthly transactions that are past the due date
-                if (transaction.Repeats === "Monthly" && new Date(transaction.Date).getDate() < today)
+                var transactionDate = new Date(transaction.Date);
+                // If the transaction does not fall within the current month or the date is in the past, skip it
+                if (transactionDate.getMonth() !== today.getMonth() || transactionDate < today)
                     return;
-                
-                var template = $('#transactionTemplate').clone().removeAttr('id').show();
+
+                var template = $('#transactionTemplate > .transaction').clone();
+
                 template.find('.transaction-id').text(transaction._id);
                 template.find('.transaction-name').text(transaction.Name);
                 template.find('.transaction-amount').text(transaction.Amount);
@@ -90,10 +99,14 @@
                 template.find('.transaction-repeatsOn').text(transaction.RepeatsOn);
                 template.find('.transaction-date').text(transaction.Date);
 
+                // Add some data needed for updating transactions
+                template.attr('data-id', transaction._id);
+                template.attr('data-startson', transaction.StartsOn);
+
                 if (transaction.Amount < 0) {
-                    template.find('.transaction').addClass('expense');
+                    template.addClass('expense');
                 } else {
-                    template.find('.transaction').addClass('income');
+                    template.addClass('income');
                 }
 
                 container.append(template);
