@@ -11,13 +11,32 @@ body {
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .income {
-    background-color: lightgreen;
-    color: darkgreen;
+    border: 2px solid green;
 }
 .expense {
-    background-color: lightcoral;
-    color: darkred;
+    border: 2px solid red;
+}
+
+.transaction-date {
+    font-size: 1.5em;
+}
+
+.transaction-name {
+    font-size: 1.2em;
+}
+
+.transaction-amount {
+    font-size: 1.2em;
+}
+
+.transaction-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
