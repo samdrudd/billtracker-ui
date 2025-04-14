@@ -5,6 +5,10 @@ body {
     padding: 20px;
 }
 
+header h1 {
+    text-align: center;
+}
+
 .transaction {
     background-color: #fff;
     border-radius: 5px;
@@ -14,6 +18,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .income {
@@ -39,4 +46,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+}
+
+/* mobile styles */
+@media only screen and (max-width: 768px) {
+    .transaction {
+        width: 80%;
+    }
 }
