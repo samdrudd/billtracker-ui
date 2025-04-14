@@ -21,9 +21,9 @@ class Transaction {
     }
 
     isDateValid() {
-        var currentDate = new Date();
-        var transactionDate = new Date(this.date);
-        return transactionDate.getMonth() === currentDate.getMonth() && transactionDate >= currentDate;
+        var currentDate = moment();
+        var transactionDate = moment(this.date);
+        return transactionDate.month() === currentDate.month() && transactionDate >= currentDate;
     }
 
     html() {
@@ -81,28 +81,27 @@ class Transaction {
         transactions.forEach(function(transaction) {
             // If the transaction repeats weekly, determine which dates will occur within the current month            
             if (transaction.repeats === "Weekly") {
-                var currentDate = new Date();
-                var lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-                var startDate = new Date(transaction.date);
-                var repeatDay = startDate.getDay();
+                var currentDate = moment();
+                var lastDayOfMonth = moment().endOf('month');
+                var startDate = moment(transaction.date);
                 var repeatInterval = parseInt(transaction.repeatsOn);
 
                 var dates = [];
 
-                var intervalDate = startDate;
+                var intervalDate = startDate.clone();              
                 while (intervalDate <= lastDayOfMonth) {
                     if (intervalDate >= currentDate) {
-                        dates.push(intervalDate.toISOString().split('T')[0]);
+                        dates.push(intervalDate.clone());
                     }
-                    intervalDate.setDate(intervalDate.getDate() + repeatInterval * 7);
+                    intervalDate = intervalDate.add(repeatInterval, 'w');
                 }
 
                 // If valid dates, add them to the processed transactions to be returned
                 if (dates != []) {
-                    // Set the date of the current transaction object to the first valid date (keep the starting date)
+                    // Keep the original date from the db as the starting date
                     var startingDate = transaction.date;
 
-                    // If there are multiple valid dates, create a new transaction object for each date
+                    // Add each valid date to the array of processed transactions
                     for (var i = 0; i < dates.length; i++) {
                         var newTransaction = new Transaction(transaction.id, transaction.name, transaction.amount, transaction.repeats, transaction.repeatsOn, dates[i]);
                         newTransaction.startsOn = startingDate; // Set the starting date to the original transaction date
@@ -117,7 +116,7 @@ class Transaction {
             // If the transaction is monthly, update the date to the corresponding day of the current month
             if (transaction.repeats === "Monthly") {
                 transaction.startsOn = transaction.date;
-                transaction.date = new Date(new Date().getFullYear(), new Date().getMonth(), transaction.repeatsOn);
+                transaction.date = moment().date(transaction.repeatsOn);
 
                 // If the date for the transaction falls within the current month and is not in the past, add it to the processed transactions to be returned
                 if (transaction.isDateValid())
@@ -126,7 +125,7 @@ class Transaction {
         });
         
         processedTransactions.sort(function(a, b) {
-            return new Date(a.date) - new Date(b.date);
+            return moment(a.date) - moment(b.date);
         });
 
         return processedTransactions;
