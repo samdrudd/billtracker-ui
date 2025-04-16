@@ -61,7 +61,7 @@ class TransactionModel {
     processTransactions() {
         // Clear currently processed transactions
         this.processedTransactions = [];
-        
+
         // Update transaction dates for current month and year, filter out past transactions and those not in the current month, sort by date
         this.transactions.forEach((transaction) => {
             // If the transaction is not set to repeat, check if the date is valid and add it to the processed transactions to be returned
@@ -74,7 +74,7 @@ class TransactionModel {
             // If the transaction repeats weekly, determine which dates will occur within the current month            
             if (transaction.repeats === "Weekly") {
                 var currentDate = moment();
-                var lastDayOfMonth = moment().endOf('month');
+                var lastDayOfMonth = moment().year(this.dateYear).month(this.dateMonth).endOf('month');
                 var startDate = moment(transaction.date);
                 var repeatInterval = parseInt(transaction.repeatsOn);
 
