@@ -1,84 +1,21 @@
-class Transaction {
-    static route = API.URL + 'transactions';
-
-    constructor(id, name, amount, repeats, repeatsOn, date) {
-        this.id = id;
-        this.amount = amount;
-        this.date = date;
-        this.name = name;
-        this.repeats = repeats;
-        this.repeatsOn = repeatsOn;
-        this.startsOn = date;
-
-        if (amount < 0)
-            this.type = "expense";
-        else
-            this.type = "income";
+class TransactionListView {
+    constructor(containerElementId) {
+        this.containerElementId = containerElementId;
     }
 
-    displayDate() {
-        return moment(this.date).format("M-D-YYYY");
-    }
-
-    isDateValid() {
-        var currentDate = moment();
-        var transactionDate = moment(this.date);
-        return transactionDate.month() === currentDate.month() && transactionDate >= currentDate;
-    }
-
-    html() {
-        return `
-            <div class="transaction ${this.type}" data-id="${this.id}" data-repeats="${this.repeats}" data-repeats-on="${this.repeatsOn}" data-date="${this.date}">
-                <div class="transaction-date">${this.displayDate()}</div>
-                <div class="transaction-details">
-                    <div class="transaction-name">${this.name}</div>
-                    <div class="transaction-amount">${this.amount}</div>
-                </div>
-            </div>
-        `;
-    }
-
-    json() {
-        return {
-            Name: this.name,
-            Amount: this.amount,
-            Repeats: this.repeats,
-            RepeatsOn: this.repeatsOn,
-            Date: this.startsOn
-        };
-    }
-
-    static getAll(successCallback, errorCallback) {
-        $.ajax({
-            url: Transaction.route,
-            method: 'GET',
-            success: function(data) {
-                // id, name, amount, repeats, repeatsOn, date
-                var transactions = data.map(function(transactionData) {
-                    return new Transaction(
-                        transactionData._id,
-                        transactionData.Name,
-                        transactionData.Amount,
-                        transactionData.Repeats,
-                        transactionData.RepeatsOn,
-                        transactionData.Date
-                    );
-                });
-
-                successCallback(transactions);                
-            },
-            error: function(error) {
-                console.error('Error fetching transactions: ', error);
-                errorCallback(error);
-            }
-        });
-    }
-
-    static processTransactions(transactions) {
+    // Process transactions based on current month and day
+    processTransactions(transactions) {
         // Update transaction dates for current month and year, filter out past transactions and those not in the current month, sort by date
         var processedTransactions = [];
 
         transactions.forEach(function(transaction) {
+            // If the transaction is not set to repeat, check if the date is valid and add it to the processed transactions to be returned
+            if (transaction.repeats === "None") {
+                // If the date for the transaction falls within the current month and is not in the past, add it to the processed transactions to be returned
+                if (transaction.isDateValid())
+                    processedTransactions.push(transaction);
+            }
+
             // If the transaction repeats weekly, determine which dates will occur within the current month            
             if (transaction.repeats === "Weekly") {
                 var currentDate = moment();
@@ -129,5 +66,29 @@ class Transaction {
         });
 
         return processedTransactions;
+    }
+
+    renderTransactionList(transactions) {   
+        $(`#${this.containerElementId}`).empty(); // Clear the container
+
+        transactions = this.processTransactions(transactions); // Process transactions to get valid dates
+
+        transactions.forEach(transaction => {
+            const transactionElement = 
+            `
+                <div class="transaction ${transaction.type}" data-id="${transaction.id}" data-repeats="${transaction.repeats}" data-repeats-on="${transaction.repeatsOn}" data-date="${transaction.date}">
+                    <div class="transaction-date">${transaction.displayDate()}</div>
+                    <div class="transaction-details">
+                        <div class="transaction-name">${transaction.name}</div>
+                        <div class="transaction-amount">${transaction.amount}</div>
+                    </div>
+                </div>
+            `;
+            $(`#${this.containerElementId}`).append(transactionElement);
+        });
+    }
+
+    update(transactions) {
+        this.renderTransactionList(transactions);
     }
 }

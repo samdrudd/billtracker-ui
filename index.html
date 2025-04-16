@@ -9,7 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="./config.js"></script>
     <script src="./api.js"></script>
-    <script src="./transaction.js"></script>
+    <script src="./models/TransactionModel.js"></script>
+    <script src="./views/TransactionListView.js"></script>
+    <script src="./controllers/TransactionController.js"></script>
 </head>
 <body>
     <header>
@@ -20,30 +22,20 @@
     </main>
     <footer>
     </footer>
-    <script>  
+    <script>
+        const transactionModel = new TransactionModel();
+        const transactionListView = new TransactionListView("transactionsContainer");
+        const transactionController = new TransactionController(transactionModel);
+
+        transactionModel.addObserver(transactionListView);
+
         var updateHeaderDate = function() {
             $('#header-date').text(moment().format("MMMM YYYY"));
         };
 
-        var renderTransactions = function(transactions) {
-            var container = $('#transactionsContainer');
-            container.empty(); // Clear existing transactions
-
-            transactions = Transaction.processTransactions(transactions);
-
-            transactions.forEach(function(transaction) {
-                container.append(transaction.html());
-            });
-        };
-
-        var handleError = function(error) {
-            console.error("Error:", error);
-            alert("An error occurred while fetching transactions. Please try again later.");
-        };
-
         $(document).ready(function() {
-            updateHeaderDate();            
-            Transaction.getAll(renderTransactions, handleError);
+            updateHeaderDate();          
+            transactionController.getAll();
         });
     </script>
 </body>
