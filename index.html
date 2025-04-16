@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="./icons/solid.min.js"></script>
+    <script src="./icons/fontawesome.min.js"></script>
     <script src="./config.js"></script>
     <script src="./api.js"></script>
     <script src="./models/TransactionModel.js"></script>
@@ -15,12 +17,14 @@
 </head>
 <body>
     <header>
-        <h1>Upcoming Transactions for <span id="header-date"></span></h1>
+        <h1>Upcoming Transactions for <span id="date-backward" class="date-button" onClick="dateBackward()"><i class="fa-solid fa-chevron-left"></i></span><span id="header-date"></span><span id="date-forward" class="date-button" onClick="dateForward()"><i class="fa-solid fa-chevron-right"></i></span></h1>
     </header>
     <main>
         <div id="transactionsContainer"></div>
     </main>
     <footer>
+        <input type="hidden" id="dateMonth" value="">
+        <input type="hidden" id="dateYear" value="">
     </footer>
     <script>
         const transactionModel = new TransactionModel();
@@ -29,12 +33,27 @@
 
         transactionModel.addObserver(transactionListView);
 
-        var updateHeaderDate = function() {
-            $('#header-date').text(moment().format("MMMM YYYY"));
+        var dateBackward = function() {
+            var currentDate = moment().date(1).month($('#dateMonth').val()).year($('#dateYear').val());
+            var newDate = currentDate.subtract(1, 'month');
+            updateHeaderDate(newDate.month(), newDate.year());
+        }
+
+        var dateForward = function() {
+            var currentDate = moment().date(1).month($('#dateMonth').val()).year($('#dateYear').val());
+            var newDate = currentDate.add(1, 'month');
+            updateHeaderDate(newDate.month(), newDate.year());
+        }
+
+        var updateHeaderDate = function(month, year) {
+            $('#dateMonth').val(month);
+            $('#dateYear').val(year);
+            $('#header-date').text(moment().date(1).month(month).year(year).format("MMMM YYYY"));
+            transactionController.changeDate(month, year);
         };
 
         $(document).ready(function() {
-            updateHeaderDate();          
+            updateHeaderDate(moment().month(), moment().year());          
             transactionController.getAll();
         });
     </script>

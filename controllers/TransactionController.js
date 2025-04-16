@@ -8,4 +8,8 @@ class TransactionController {
             console.error('Error fetching transactions: ', error);
         });
     }
+
+    changeDate(month, year) {
+        this.model.changeDate(month, year);
+    }
 }
