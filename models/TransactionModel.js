@@ -18,6 +18,34 @@ class Transaction {
         return moment(this.date).format("M-D-YYYY");
     }
 
+    displayStartDate() {
+        return moment(this.startsOn).format("M-D-YYYY");
+    }
+
+    displayAmount() {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2
+          }).format(this.amount);
+    }
+
+    displayRepeats() {
+        if (this.repeats !== "None") {
+            if (this.repeats === "Weekly") {
+                if (this.repeatsOn === 1)
+                    return `<div>Repeats once a week starting on ${this.displayStartDate()}</div>`;
+                else if (this.repeatsOn > 1)
+                    return `<div>Repeats once every ${this.repeatsOn} weeks starting on ${this.displayStartDate()}</div>`;
+            }
+            if (this.repeats === "Monthly")
+                return `<div>Repeats on day ${this.repeatsOn} of each month starting on ${this.displayStartDate()}</div>`;
+        }
+        return "<div>Does not repeat</div>";
+    }
+
+
     json() {
         return {
             Name: this.name,
@@ -36,19 +64,38 @@ class TransactionModel {
         this.processedTransactions = [];
         this.dateMonth = moment().month();
         this.dateYear = moment().year();
-        this.observers = [];
+        this.selectedTransaction = null;
+        this.listObservers = [];
+        this.singleObservers = [];
     }
 
-    addObserver(observer) {
-        this.observers.push(observer);
+    addListObserver(observer) {
+        this.listObservers.push(observer);
     }
 
-    removeObserver(observer) {
-        this.observers = this.observers.filter(obs => obs !== observer);
+    removeListObserver(observer) {
+        this.listObservers = this.observers.filter(obs => obs !== observer);
     }
 
-    notifyObservers() {
-        this.observers.forEach(observer => observer.update(this.processedTransactions));
+    notifyListObservers() {
+        this.listObservers.forEach(observer => observer.update(this.processedTransactions));
+    }
+
+    addSingleObserver(observer) {
+        this.singleObservers.push(observer);
+    }
+
+    removeSingleObserver(observer) {
+        this.singleObservers = this.observers.filter(obs => obs !== observer);
+    }
+
+    notifySingleObservers() {
+        this.singleObservers.forEach(observer => observer.update(this.selectedTransaction));
+    }
+
+    notifyAllObservers() {
+        this.notifyListObservers();
+        this.notifySingleObservers();
     }
 
     isDateValid(transaction) {
@@ -91,7 +138,7 @@ class TransactionModel {
                 // If valid dates, add them to the processed transactions to be returned
                 if (dates != []) {
                     // Keep the original date from the db as the starting date
-                    var startingDate = transaction.date;
+                    var startingDate = transaction.startsOn;
 
                     // Add each valid date to the array of processed transactions
                     for (var i = 0; i < dates.length; i++) {
@@ -107,7 +154,6 @@ class TransactionModel {
 
             // If the transaction is monthly, update the date to the corresponding day of the current month
             if (transaction.repeats === "Monthly") {
-                transaction.startsOn = transaction.date;
                 transaction.date = moment().year(this.dateYear).month(this.dateMonth).date(transaction.repeatsOn);
 
                 // If the date for the transaction falls within the current month and is not in the past, add it to the processed transactions to be returned
@@ -127,7 +173,7 @@ class TransactionModel {
 
         // Process transactions based on the new date
         this.processTransactions();
-        this.notifyObservers();
+        this.notifyListObservers();
     }
 
     getAll(errorCallback) {
@@ -149,12 +195,18 @@ class TransactionModel {
                 });
 
                 this.processTransactions();
-                this.notifyObservers();                
+                this.notifyListObservers();                
             },
             error: function(error) {
                 console.error('Error fetching transactions: ', error);
                 errorCallback(error);
             }
         });
+    }
+
+    // Select a transaction from processed transaction by ID
+    selectTransaction(transactionId) {
+        this.selectedTransaction = this.processedTransactions.find(transaction => transaction.id === transactionId);
+        this.notifySingleObservers();
     }
 }

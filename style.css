@@ -32,6 +32,10 @@ header h1 {
     margin-right: auto;
 }
 
+.transaction:hover {
+    cursor: pointer;
+}
+
 .income {
     border: 2px solid green;
 }

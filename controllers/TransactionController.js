@@ -9,6 +9,10 @@ class TransactionController {
         });
     }
 
+    selectTransaction(transactionId) {
+        this.model.selectTransaction(transactionId);
+    }
+
     changeDate(month, year) {
         this.model.changeDate(month, year);
     }
