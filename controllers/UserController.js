@@ -33,4 +33,10 @@ class UserController {
             }
         );
     }
+
+    logout(callback) {
+        this.model.logout(() => {
+            callback();
+        });
+    }
 }

@@ -12,6 +12,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.3/bootbox.min.js" integrity="sha512-nLojpkOyMZsj5alozV6hbZ2SwA+KzJgI+k+3XaCfgRiqq3rZz5663Rg1Fha5qOevcJ9uVJfoldHIEd9AcFRpsw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="./icons/solid.min.js"></script>
     <script src="./icons/fontawesome.min.js"></script>
@@ -24,10 +25,18 @@
     <script src="./controllers/TransactionController.js"></script>
 
     <script src="./models/UserModel.js"></script>
+    <script src="./views/UserHeaderView.js"></script>
     <script src="./controllers/UserController.js"></script>
 </head>
 <body>
     <header>
+        <div class="navbar navbar-dark d-flex justify-content-between align-items-center p-2 px-4 mb-4 bg-dark text-white">
+            <div class="navbar-brand">Bill Tracker</div>
+            <div class="d-flex align-items-center">
+                <div id="usernameContainer" class="container pr-2"></div>
+                <button id="logout-button" class="btn btn-danger" onClick="logout()">Logout</button>
+            </div>
+        </div>
         <h1>Upcoming Transactions for <span id="date-backward" class="date-button" onClick="dateBackward()"><i class="fa-solid fa-chevron-left"></i></span><span id="header-date"></span><span id="date-forward" class="date-button" onClick="dateForward()"><i class="fa-solid fa-chevron-right"></i></span></h1>
     </header>
     <main>
@@ -46,7 +55,10 @@
     </footer>
     <script>
         const userModel = new UserModel();
+        const userHeaderView = new UserHeaderView("usernameContainer");
         const userController = new UserController(userModel);
+
+        userModel.addObserver(userHeaderView);
 
         const transactionModel = new TransactionModel();
         const transactionListView = new TransactionListView("transactionsContainer");
@@ -86,6 +98,19 @@
 
         var loadAll = function() {
             transactionController.getAll();
+        }
+
+        var logout = function() {
+            bootbox.confirm({
+                closeButton: false,
+                size: 'small',
+                message: "Are you sure you want to log out?",
+                callback: function(result) {
+                    if (result) {
+                        userController.logout(redirect);
+                    }
+                }
+            });
         }
 
         $(document).ready(function() {

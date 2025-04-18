@@ -20,13 +20,6 @@
     <script src="./models/UserModel.js"></script>
     <script src="./controllers/UserController.js"></script>
     <style>
-        main {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
         .login-form {
             width: 500px;
         }
@@ -36,28 +29,24 @@
     <header>
     </header>
     <main>
-        <div class="login-form container px-4 py-5">
-            <div class="align-items-center">
-                <div class="row">
-                    <div class="column">
-                        <div id="loginAlert" class="alert alert-danger" style="display: none;"></div>
-                        <form class="border rounded-3 p-4 bg-body-tertiary">
-                            <div class="form-floating p-2">
-                                <input id="username" type="text" class="form-control" required>
-                                <label for="username">Username</label>
-                            </div>
-                            <div class="form-floating p-2">
-                                <input id="password" type="password" class="form-control" required>
-                                <label for="password">Password</label>
-                            </div>
-                            <div class="form-floating p-2 align-items-center">
-                                <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="login()" value="Login"></input>
-                            </div>
-                        </form>
+        <div class="main d-flex flex-column vh-100 justify-content-center align-items-center">
+            <div class="login-form px-4 py-5">
+                <div id="loginAlert" class="alert alert-danger" style="display: none;"></div>
+                <form class="border rounded-3 p-4 bg-body-tertiary">
+                    <div class="form-floating p-2">
+                        <input id="username" type="text" class="form-control" required>
+                        <label for="username">Username</label>
                     </div>
-                </div>
-            </div>
-        </div> 
+                    <div class="form-floating p-2">
+                        <input id="password" type="password" class="form-control" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="form-floating p-2">
+                        <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="login()" value="Login"></input>
+                    </div>
+                </form>
+            </div> 
+        </div>    
     </main>
     <footer>
     </footer>
