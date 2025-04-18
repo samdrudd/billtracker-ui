@@ -17,10 +17,14 @@
     <script src="./icons/fontawesome.min.js"></script>
     <script src="./config.js"></script>
     <script src="./api.js"></script>
+
     <script src="./models/TransactionModel.js"></script>
     <script src="./views/TransactionListView.js"></script>
     <script src="./views/TransactionView.js"></script>
     <script src="./controllers/TransactionController.js"></script>
+
+    <script src="./models/UserModel.js"></script>
+    <script src="./controllers/UserController.js"></script>
 </head>
 <body>
     <header>
@@ -41,6 +45,9 @@
         <input type="hidden" id="dateYear" value="">
     </footer>
     <script>
+        const userModel = new UserModel();
+        const userController = new UserController(userModel);
+
         const transactionModel = new TransactionModel();
         const transactionListView = new TransactionListView("transactionsContainer");
         const transactionView = new TransactionView("transactionContainer", "transactionModalContainer");
@@ -53,28 +60,50 @@
             var currentDate = moment().date(1).month($('#dateMonth').val()).year($('#dateYear').val());
             var newDate = currentDate.subtract(1, 'month');
             updateHeaderDate(newDate.month(), newDate.year());
+            transactionController.changeDate(newDate.month(), newDate.year());
         }
 
         var dateForward = function() {
             var currentDate = moment().date(1).month($('#dateMonth').val()).year($('#dateYear').val());
             var newDate = currentDate.add(1, 'month');
             updateHeaderDate(newDate.month(), newDate.year());
+            transactionController.changeDate(newDate.month(), newDate.year());
         }
 
         var updateHeaderDate = function(month, year) {
             $('#dateMonth').val(month);
             $('#dateYear').val(year);
             $('#header-date').text(moment().date(1).month(month).year(year).format("MMMM YYYY"));
-            transactionController.changeDate(month, year);
         }
 
         var selectTransaction = function(transactionId) {
             transactionController.selectTransaction(transactionId);
         }
 
-        $(document).ready(function() {
-            updateHeaderDate(moment().month(), moment().year());          
+        var redirect = function() {
+            window.location.href = "login.html";
+        }
+
+        var loadAll = function() {
             transactionController.getAll();
+        }
+
+        $(document).ready(function() {
+            updateHeaderDate(moment().month(), moment().year());
+
+            // If user is already logged in, fetch transactions
+            if (userController.isLoggedIn()) {
+                loadAll();
+            } else {
+                // Otherwise, check for a token
+                const token = localStorage.getItem('billtrackerAuth');
+
+                // If token exists, auth token. If token valid, fetch transactions. If token invalid or does not exist, redirect to login page
+                if (token)
+                    userController.tokenAuth(loadAll, redirect);
+                else
+                    redirect();
+            }
         });
     </script>
 </body>

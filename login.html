@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bill Tracker</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="./icons/solid.min.js"></script>
+    <script src="./icons/fontawesome.min.js"></script>
+    <script src="./config.js"></script>
+    <script src="./api.js"></script>
+    <script src="./models/UserModel.js"></script>
+    <script src="./controllers/UserController.js"></script>
+    <style>
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-form {
+            width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="login-form container px-4 py-5">
+            <div class="align-items-center">
+                <div class="row">
+                    <div class="column">
+                        <div id="loginAlert" class="alert alert-danger" style="display: none;"></div>
+                        <form class="border rounded-3 p-4 bg-body-tertiary">
+                            <div class="form-floating p-2">
+                                <input id="username" type="text" class="form-control" required>
+                                <label for="username">Username</label>
+                            </div>
+                            <div class="form-floating p-2">
+                                <input id="password" type="password" class="form-control" required>
+                                <label for="password">Password</label>
+                            </div>
+                            <div class="form-floating p-2 align-items-center">
+                                <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="login()" value="Login"></input>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </main>
+    <footer>
+    </footer>
+    <script>
+        const userModel = new UserModel();
+        const userController = new UserController(userModel);
+
+        function redirect() {
+            window.location.href = "index.html";
+        }
+
+        function loginError(message = "Login failed, please check your credentials and try again.") {
+            $("#loginAlert").text(message);
+            $("#loginAlert").show();
+        }
+
+        function login() {
+            event.preventDefault(); // Prevent form submission
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username && password) {
+                userController.login(username, password, redirect, loginError);
+            } else {
+                loginError("Please fill in all fields.");
+            }
+        }
+    </script>
+</body>
+</html>

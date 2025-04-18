@@ -177,10 +177,14 @@ class TransactionModel {
     }
 
     getAll(errorCallback) {
+        const authToken = localStorage.getItem('billtrackerAuth');
         $.ajax({
             url: this.route,
             method: 'GET',
             context: this,
+            headers: {
+                'Authorization': 'Bearer ' + authToken
+            },
             success: function(data) {
                 // id, name, amount, repeats, repeatsOn, date
                 this.transactions = data.map(function(transactionData) {
