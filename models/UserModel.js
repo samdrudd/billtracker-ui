@@ -26,6 +26,25 @@ class UserModel {
         this.observers.forEach(observer => observer.update(this.user));
     }
 
+    create(username, email, password, successCallback, errorCallback) {
+        $.ajax({
+            url: this.route + '/create',
+            method: 'POST',
+            context: this,
+            data: {
+                username: username,
+                email: email,
+                password: password
+            },
+            success: function(data) {
+                successCallback();              
+            },
+            error: function(res) {
+                errorCallback(res.responseJSON.errors);
+            }
+        });
+    }
+
     tokenAuth(successCallback, errorCallback) {  
         $.ajax({
             url: this.route + '/tokenAuth',
@@ -41,7 +60,6 @@ class UserModel {
                 successCallback();
             },
             error: function(error) {
-                console.error('Error authenticating with token: ', error);
                 localStorage.removeItem('billtrackerAuth');
                 this.user = null;
                 this.notifyObservers();
@@ -64,9 +82,8 @@ class UserModel {
                 localStorage.setItem('billtrackerAuth', data.user.token);
                 successCallback();              
             },
-            error: function(error) {
-                console.error('Error logging in: ', error);
-                errorCallback(error);
+            error: function(res) {
+                errorCallback(res.responseJSON.errors);
             }
         });
     }

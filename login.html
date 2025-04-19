@@ -31,7 +31,7 @@
     <main>
         <div class="main d-flex flex-column vh-100 justify-content-center align-items-center">
             <div class="login-form px-4 py-5">
-                <div id="loginAlert" class="alert alert-danger" style="display: none;"></div>
+                <div id="alerts" style="display: none;"></div>
                 <form class="border rounded-3 p-4 bg-body-tertiary">
                     <div class="form-floating p-2">
                         <input id="username" type="text" class="form-control" required>
@@ -45,8 +45,11 @@
                         <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="login()" value="Login"></input>
                     </div>
                 </form>
+                <div class="text-center mt-3">
+                    Don't have an account? Register <a href="register.html">here</a>!
+                </div>
             </div> 
-        </div>    
+        </div>
     </main>
     <footer>
     </footer>
@@ -54,13 +57,32 @@
         const userModel = new UserModel();
         const userController = new UserController(userModel);
 
-        function redirect() {
-            window.location.href = "index.html";
-        }
+        const USER_CREATED = 0;
+        const INVALID_CREDENTIALS = 4;
+        const EMPTY_FIELDS = 98;
+        const UNKNOWN_ERROR = 99;
 
-        function loginError(message = "Login failed, please check your credentials and try again.") {
-            $("#loginAlert").text(message);
-            $("#loginAlert").show();
+        const alertCodes = {};
+        alertCodes[USER_CREATED] = {m: 'User created successfully, please login to continue.', t: 'alert-success'};
+        alertCodes[EMPTY_FIELDS] = {m: 'Please fill in all fields.', t: 'alert-danger'};
+        alertCodes[INVALID_CREDENTIALS] = {m: 'Invalid username or password.', t: 'alert-danger'};
+        alertCodes[UNKNOWN_ERROR] = {m: 'An unknown error occurred. Please try again later.', t: 'alert-danger'};
+
+        function showAlerts(alerts) {
+            $("#alerts").empty(); // Clear previous alerts
+
+            for (let i = 0; i < alerts.length; i++) {
+                const alertCode = alerts[i];
+                const alertMessage = alertCodes[alertCode].m || alertCodes[UNKNOWN_ERROR].m;
+                const alertType = alertCodes[alertCode].t || alertCodes[UNKNOWN_ERROR].t;
+                $("#alerts").append(`<div class="alert ${alertType}">${alertMessage}</div>`);
+            }
+
+            if (alerts.length > 0) {
+                $("#alerts").show();
+            } else {
+                $("#alerts").hide();
+            }
         }
 
         function login() {
@@ -69,11 +91,28 @@
             const password = document.getElementById('password').value;
 
             if (username && password) {
-                userController.login(username, password, redirect, loginError);
+                userController.login(username, password);
             } else {
-                loginError("Please fill in all fields.");
+                showAlerts([EMPTY_FIELDS]);
             }
         }
+
+        // Check for alerts in the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        $(document).ready(function() {
+            $("#alerts").hide(); // Hide the alerts div initially
+
+            if (urlParams.has('r')) {
+                if (urlParams.get('r') === 's') {
+                    showAlerts([USER_CREATED]);
+                }
+                if (urlParams.get('r') === 'e') {
+                    let errorCodes = urlParams.get('c').split(',');
+                    errorCodes = errorCodes.map(Number); // Convert to numbers
+                    showAlerts(errorCodes);
+                }
+            }
+        });
     </script>
 </body>
 </html>

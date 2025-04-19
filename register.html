@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bill Tracker</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="./icons/solid.min.js"></script>
+    <script src="./icons/fontawesome.min.js"></script>
+    <script src="./config.js"></script>
+    <script src="./api.js"></script>
+    <script src="./models/UserModel.js"></script>
+    <script src="./controllers/UserController.js"></script>
+    <style>
+        .register-form {
+            width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+    </header>
+    <main>
+        <div class="main d-flex flex-column vh-100 justify-content-center align-items-center">
+            <div class="register-form px-4 py-5">
+                <div id="alerts" style="display: none;">
+                </div>
+                <form class="border rounded-3 p-4 bg-body-tertiary">
+                    <div class="form-floating p-2">
+                        <input id="username" type="text" class="form-control" required>
+                        <label for="username">Username</label>
+                    </div>
+                    <div class="form-floating p-2">
+                        <input id="email" type="test" class="form-control" required>
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="form-floating p-2">
+                        <input id="password" type="password" class="form-control" required>
+                        <label for="password">Password</label>
+                        <small id="passwordHelp" class="form-text text-muted">Passwords must be at least 6 characters.</small>
+                    </div>
+                    <div class="form-floating p-2">
+                        <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="register()" value="Register"></input>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    Already have an account? Log in <a href="login.html">here</a>!
+                </div>
+            </div> 
+        </div>    
+    </main>
+    <footer>
+    </footer>
+    <script>
+        const userModel = new UserModel();
+        const userController = new UserController(userModel);
+
+        const USER_ALREADY_EXISTS = 1;
+        const PASSWORD_TOO_SHORT = 2;
+        const INVALID_EMAIL = 3;
+        const EMPTY_FIELDS = 98;
+        const UNKNOWN_ERROR = 99;
+
+        const errorCodes = {};
+        errorCodes[USER_ALREADY_EXISTS] = `Account already exists, please <a href="login.html">log in</a> to continue.`;
+        errorCodes[PASSWORD_TOO_SHORT] = 'Password must be at least 6 characters long.';
+        errorCodes[INVALID_EMAIL] = 'Invalid email format.';
+        errorCodes[EMPTY_FIELDS] = 'Please fill in all fields.';
+        errorCodes[UNKNOWN_ERROR] = 'An unknown error occurred. Please try again later.';
+
+        function showErrors(errors) {
+            $("#alerts").empty(); // Clear previous alerts
+
+            for (let i = 0; i < errors.length; i++) {
+                const error = errors[i];
+                const errorMessage = errorCodes[error] || errorCodes[UNKNOWN_ERROR];
+                $("#alerts").append(`<div class="alert alert-danger">${errorMessage}</div>`);
+            }
+
+            if (errors.length > 0) {
+                $("#alerts").show();
+            } else {
+                $("#alerts").hide();
+            }
+        }
+
+        function highlightFormFields(errors) {
+            if (errors.includes(USER_ALREADY_EXISTS)) {
+                $("#username").addClass("is-invalid");
+            } else {
+                $("#username").removeClass("is-invalid");
+            }
+
+            if (errors.includes(PASSWORD_TOO_SHORT)) {
+                $("#password").addClass("is-invalid");
+            } else {
+                $("#password").removeClass("is-invalid");
+            }
+
+            if (errors.includes(INVALID_EMAIL)) {
+                $("#email").addClass("is-invalid");
+            } else {
+                $("#email").removeClass("is-invalid");
+            }
+        }
+
+        function register() {
+            event.preventDefault(); // Prevent form submission
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (username && email && password) {
+                userController.create(username, email, password);
+            } else {
+                showErrors([EMPTY_FIELDS]);
+            }
+        }
+
+        // Check for errors in the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        $(document).ready(function() {
+            $("#alerts").hide(); // Hide the alerts div initially
+
+            if (urlParams.has('r')) {
+                if (urlParams.get('r') === 'e') {
+                    if (urlParams.has('c')) {
+                        let errorCodes = urlParams.get('c').split(',');
+                        errorCodes = errorCodes.map(Number); // Convert to numbers
+                        showErrors(errorCodes);
+                        highlightFormFields(errorCodes);
+                    } else {
+                        showErrors([UNKNOWN_ERROR]);
+                    }
+                }
+            }
+
+            // Re-populate the form fields if they exist in the URL parameters (except password)
+            if (urlParams.has('u')) {
+                document.getElementById('username').value = urlParams.get('u');
+            }
+
+            if (urlParams.has('e')) {
+                document.getElementById('email').value = urlParams.get('e');
+            }
+        });
+    </script>
+</body>
+</html>

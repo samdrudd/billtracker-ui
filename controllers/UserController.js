@@ -7,29 +7,38 @@ class UserController {
         return this.model.user !== null;
     }
 
+    create(username, email, password) {
+        this.model.create(username, email, password, 
+            () => {
+                window.location.href = 'login.html?r=s';
+            },
+            (errors) => {
+                let errorString = errors.join(',');
+                window.location.href = 'register.html?r=e&c=' + errorString + '&u=' + username + '&e=' + email;
+            }
+        );
+    }
+
     tokenAuth(successCallback, errorCallback) {
         this.model.tokenAuth( 
             () => {
-                console.log('Token authentication successful');
                 successCallback();
             },
             () => {
-                console.error('Token authentication failed');
                 localStorage.removeItem('billtrackerAuth');
                 errorCallback();
             }
         );
     }
 
-    login(username, password, successCallback, errorCallback) {
+    login(username, password) {
         this.model.login(username, password, 
             (data) => {
-                console.log('Login successful: ', data);
-                successCallback();
+                window.location.href = 'index.html';
             },
-            (error) => {
-                console.error('Login failed: ', error);
-                errorCallback();
+            (errors) => {
+                let errorString = errors.join(',');
+                window.location.href = 'login.html?r=e&c=' + errorString;
             }
         );
     }
