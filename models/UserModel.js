@@ -45,13 +45,15 @@ class UserModel {
         });
     }
 
-    tokenAuth(successCallback, errorCallback) {  
+    tokenAuth(successCallback, errorCallback) {
+        const authToken = localStorage.getItem('billtrackerAuth');
+          
         $.ajax({
             url: this.route + '/tokenAuth',
             method: 'POST',
             context: this,
-            data: {
-                token: localStorage.getItem('billtrackerAuth')
+            headers: {
+                'Authorization': 'Bearer ' + authToken
             },
             success: function(data) {
                 this.user = new User(data.user.id, data.user.username, data.user.email, data.user.token);

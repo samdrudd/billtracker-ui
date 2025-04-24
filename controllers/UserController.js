@@ -10,7 +10,7 @@ class UserController {
     create(username, email, password) {
         this.model.create(username, email, password, 
             () => {
-                window.location.href = 'login.html?r=s';
+                window.location.href = 'login.html?r=s&a=create';
             },
             (errors) => {
                 let errorString = errors.join(',');
@@ -43,9 +43,9 @@ class UserController {
         );
     }
 
-    logout(callback) {
+    logout() {
         this.model.logout(() => {
-            callback();
+            window.location.href = 'login.html?r=s&a=logout';
         });
     }
 }

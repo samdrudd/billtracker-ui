@@ -23,6 +23,12 @@
         .login-form {
             width: 500px;
         }
+
+        @media (max-width: 768px) {
+            .login-form {
+                width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -58,12 +64,14 @@
         const userController = new UserController(userModel);
 
         const USER_CREATED = 0;
+        const LOGGED_OUT = 1;
         const INVALID_CREDENTIALS = 4;
         const EMPTY_FIELDS = 98;
         const UNKNOWN_ERROR = 99;
 
         const alertCodes = {};
         alertCodes[USER_CREATED] = {m: 'User created successfully, please login to continue.', t: 'alert-success'};
+        alertCodes[LOGGED_OUT] = {m: 'Logged out successfully.', t: 'alert-success'};
         alertCodes[EMPTY_FIELDS] = {m: 'Please fill in all fields.', t: 'alert-danger'};
         alertCodes[INVALID_CREDENTIALS] = {m: 'Invalid username or password.', t: 'alert-danger'};
         alertCodes[UNKNOWN_ERROR] = {m: 'An unknown error occurred. Please try again later.', t: 'alert-danger'};
@@ -104,7 +112,11 @@
 
             if (urlParams.has('r')) {
                 if (urlParams.get('r') === 's') {
-                    showAlerts([USER_CREATED]);
+                    const action = urlParams.get('a');
+                    if (action === 'create')
+                        showAlerts([USER_CREATED]);
+                    else if (action === 'logout')
+                        showAlerts([LOGGED_OUT]);
                 }
                 if (urlParams.get('r') === 'e') {
                     let errorCodes = urlParams.get('c').split(',');
