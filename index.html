@@ -32,6 +32,9 @@
     <header>
         <div class="navbar navbar-dark d-flex justify-content-between align-items-center p-2 px-4 mb-4 bg-dark text-white">
             <div class="navbar-brand">Bill Tracker</div>
+            <div>
+                <button id="add-transaction-button" class="btn btn-primary" onClick="addTransaction()">Add Transaction</button>
+            </div>
             <div class="d-flex align-items-center">
                 <div id="usernameContainer" class="container pr-2"></div>
                 <button id="logout-button" class="btn btn-danger" onClick="logout()">Logout</button>
@@ -44,6 +47,75 @@
             <div class="modal-dialog">
                 <div id="transactionContainer" class="modal-content">
 
+                </div>
+            </div>
+        </div>
+        <div id="transactionAddModalContainer" class="modal fade">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div id="transactionAddContainer" class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Transaction</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="alert" class="alert alert-danger" style="display: none;"></div>
+                        <form>
+                            <div class="row mb-2">
+                                <div class="col">
+                                    <div class="form-floating">
+                                        <input id="transactionName" type="text" class="form-control">
+                                        <label for="transactionName">Transaction Name</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 g-2">
+                                <div class="col">
+                                    <div class="form-floating">
+                                        <input id="transactionAmount" type="number" class="form-control">
+                                        <label for="transactionAmount">Transaction Amount</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-floating">
+                                        <select id="transactionType" class="form-select">
+                                            <option value="0">Expense</option>
+                                            <option value="1">Income</option>
+                                        </select>
+                                        <label for="transactionType">Transaction Type</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-2 g-2">
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        <input id="transactionDate" type="date" class="form-control">
+                                        <label id="transactionDateLabel" for="transactionDate">Transaction Date</label>
+                                    </div>
+                                </div>
+                                <div id="transactionRepeatsContainer" class="col-6">
+                                    <div class="form-floating">
+                                        <select id="transactionRepeats" class="form-select">
+                                            <option value="None">Never</option>
+                                            <option value="Monthly">Monthly</option>
+                                            <option value="Weekly">Weekly</option>
+                                        </select>
+                                        <label for="transactionRepeats">Repeats</label>
+                                    </div>
+                                </div>
+                                <div id="transactionRepeatsOnContainer" class="col-3" style="display: none;">
+                                    <div class="form-floating">
+                                        <input id="transactionRepeatsOn" type="number" class="form-control">
+                                        <label for="transactionRepeatsOn">Every X week(s)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="addTransactionSubmit()" value="Add Transaction"></input>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,6 +164,10 @@
             transactionController.selectTransaction(transactionId);
         }
 
+        var addTransaction = function() {
+            $('#transactionAddModalContainer').modal('show');
+        }
+
         var redirect = function() {
             window.location.href = "login.html";
         }
@@ -107,12 +183,81 @@
                 message: "Are you sure you want to log out?",
                 callback: function(result) {
                     if (result) {
-                        userController.logout(redirect);
+                        userController.logout();
                     }
                 }
             });
         }
 
+        // Add onChange listener for Add Transaction form
+        $('#transactionRepeats').on('change', function() {
+            if (this.value == "None") {
+                $('#transactionRepeatsOnContainer').hide();
+                $('#transactionRepeatsContainer').removeClass("col-3").addClass("col-6");
+                $('#transactionDateLabel').text("Transaction Date");
+            } else if (this.value == "Monthly") {
+                $('#transactionRepeatsOnContainer').hide();
+                $('#transactionRepeatsContainer').removeClass("col-3").addClass("col-6");
+                $('#transactionDateLabel').text("Transaction Starts On");
+            } else if (this.value == "Weekly") {
+                $('#transactionRepeatsOnContainer').show();
+                $('#transactionRepeatsContainer').removeClass("col-6").addClass("col-3");
+                $('#transactionDateLabel').text("Transaction Starts On");
+            }
+        });
+
+        var showValidationAlert = function(errorFields) {
+            // Clear previous alerts / highlights
+            $("#alert").empty();
+            $('#transactionName').removeClass("is-invalid");
+            $('#transactionAmount').removeClass("is-invalid");
+            $('#transactionDate').removeClass("is-invalid");
+            $('#transactionRepeatsOn').removeClass("is-invalid");
+
+            $('#alert').text("Please fill in all required fields.");
+            $('#alert').show();
+
+            for (let i = 0; i < errorFields.length; i++) {
+                const field = errorFields[i];
+                $("#" + field).addClass("is-invalid");
+            }
+        }
+
+        var addTransactionSubmit = function() {
+            event.preventDefault(); // Prevent form submission
+            var name = $('#transactionName').val().trim();
+            var amount = $('#transactionAmount').val();
+            var type = $('#transactionType').val();
+            var date = $('#transactionDate').val();
+            var repeats = $('#transactionRepeats').val();
+            var repeatsOn = $('#transactionRepeatsOn').val();
+
+            var errorFields = [];
+
+            if (!name) errorFields.push("transactionName");
+            if (!amount) errorFields.push("transactionAmount");
+            if (!date) errorFields.push("transactionDate");
+            if (repeats === 'Weekly' && !repeatsOn) errorFields.push("transactionRepeatsOn");
+
+            if (errorFields.length > 0) {
+                showValidationAlert(errorFields);
+                return;
+            }
+
+            if (repeats === 'None')
+                repeatsOn = 1;
+            else if (repeats === 'Monthly')
+                repeatsOn = moment(date).date();
+
+            if (type === '0') {
+                amount = -Math.abs(amount);
+            } else {
+                amount = Math.abs(amount);
+            }
+
+            transactionController.addTransaction(name, amount, date, repeats, repeatsOn);
+        }
+        
         $(document).ready(function() {
             updateHeaderDate(moment().month(), moment().year());
 

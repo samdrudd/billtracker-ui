@@ -15,11 +15,11 @@ class Transaction {
     }
 
     displayDate() {
-        return moment(this.date).format("M-D-YYYY");
+        return moment.utc(this.date).format("M-D-YYYY");
     }
 
     displayStartDate() {
-        return moment(this.startsOn).format("M-D-YYYY");
+        return moment.utc(this.startsOn).format("M-D-YYYY");
     }
 
     displayAmount() {
@@ -212,5 +212,33 @@ class TransactionModel {
     selectTransaction(transactionId) {
         this.selectedTransaction = this.processedTransactions.find(transaction => transaction.id === transactionId);
         this.notifySingleObservers();
+    }
+
+    add(name, amount, date, repeats, repeatsOn, successCallback, errorCallback) {
+        const authToken = localStorage.getItem('billtrackerAuth');
+
+        $.ajax({
+            url: this.route,
+            method: 'POST',
+            context: this,
+            headers: {
+                'Authorization': 'Bearer ' + authToken
+            },
+            data: {
+                Name: name,
+                Amount: amount,
+                Repeats: repeats,
+                RepeatsOn: repeatsOn,
+                Date: date
+            },
+            success: function(data) {
+                console.log(data);
+                successCallback(data);
+            },
+            error: function(error) {
+                console.error('Error adding transaction: ', error);
+                errorCallback(error.responseJSON.errors);
+            }
+        });
     }
 }

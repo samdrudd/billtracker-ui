@@ -16,4 +16,16 @@ class TransactionController {
     changeDate(month, year) {
         this.model.changeDate(month, year);
     }
+
+    addTransaction(name, amount, date, repeats, repeatsOn) {
+        this.model.add(name, amount, date, repeats, repeatsOn,
+            () => {
+                window.location.href = 'index.html?r=s&a=add';
+            },
+            (errors) => {
+                let errorString = errors.join(',');
+                window.location.href = 'index.html?r=e&a=add&c=' + errorString;
+            }
+        );
+    }
 }
