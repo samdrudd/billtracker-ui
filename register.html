@@ -23,6 +23,12 @@
         .register-form {
             width: 500px;
         }
+
+        @media (max-width: 768px) {
+            .register-form {
+                width: 90%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -39,13 +45,18 @@
                         <label for="username">Username</label>
                     </div>
                     <div class="form-floating p-2">
-                        <input id="email" type="test" class="form-control" required>
+                        <input id="email" type="text" class="form-control" required>
                         <label for="email">Email</label>
                     </div>
                     <div class="form-floating p-2">
                         <input id="password" type="password" class="form-control" required>
                         <label for="password">Password</label>
                         <small id="passwordHelp" class="form-text text-muted">Passwords must be at least 6 characters.</small>
+                    </div>
+                    <div class="form-floating p-2">
+                        <input id="passwordMatch" type="password" class="form-control" required>
+                        <label for="passwordMatch">Confirm Password</label>
+                        <small id="passwordMatchAlert" class="form-text text-danger" style="display: none;">Passwords must match.</small>
                     </div>
                     <div class="form-floating p-2">
                         <input class="btn btn-lg btn-primary p-2 w-100" type="submit" onClick="register()" value="Register"></input>
@@ -66,6 +77,7 @@
         const USER_ALREADY_EXISTS = 1;
         const PASSWORD_TOO_SHORT = 2;
         const INVALID_EMAIL = 3;
+        const PASSWORD_MISMATCH = 4;
         const EMPTY_FIELDS = 98;
         const UNKNOWN_ERROR = 99;
 
@@ -73,6 +85,7 @@
         errorCodes[USER_ALREADY_EXISTS] = `Account already exists, please <a href="login.html">log in</a> to continue.`;
         errorCodes[PASSWORD_TOO_SHORT] = 'Password must be at least 6 characters long.';
         errorCodes[INVALID_EMAIL] = 'Invalid email format.';
+        errorCodes[PASSWORD_MISMATCH] = 'Passwords do not match.';
         errorCodes[EMPTY_FIELDS] = 'Please fill in all fields.';
         errorCodes[UNKNOWN_ERROR] = 'An unknown error occurred. Please try again later.';
 
@@ -93,36 +106,105 @@
         }
 
         function highlightFormFields(errors) {
-            if (errors.includes(USER_ALREADY_EXISTS)) {
+            if (errors.includes(USER_ALREADY_EXISTS) || $("#username").val() === "") {
                 $("#username").addClass("is-invalid");
             } else {
                 $("#username").removeClass("is-invalid");
             }
 
-            if (errors.includes(PASSWORD_TOO_SHORT)) {
+            if (errors.includes(PASSWORD_TOO_SHORT) || $("#password").val() === "") {
                 $("#password").addClass("is-invalid");
             } else {
                 $("#password").removeClass("is-invalid");
             }
 
-            if (errors.includes(INVALID_EMAIL)) {
+            if (errors.includes(INVALID_EMAIL) || $("#email").val() === "") {
                 $("#email").addClass("is-invalid");
             } else {
                 $("#email").removeClass("is-invalid");
             }
+
+            if (errors.includes(PASSWORD_MISMATCH) || $("#passwordMatch").val() === "" || $("#password").val() !== $("#passwordMatch").val()) {
+                $("#passwordMatch").addClass("is-invalid");
+            } else {
+                $("#passwordMatch").removeClass("is-invalid");
+            }
+        }
+
+        // Add onchange event listeners for password and passwordMatch fields
+        $('#password').on('input', function () {
+            const password = $('#password').val();
+            const passwordMatch = $('#passwordMatch').val();
+
+            if (password !== passwordMatch) {
+                $('#passwordMatchAlert').show();
+                $('#passwordMatch').addClass('is-invalid');
+            } else {
+                $('#passwordMatchAlert').hide();
+                $('#passwordMatch').removeClass('is-invalid');
+            }
+        });
+
+        $('#passwordMatch').on('input', function () {
+            const password = $('#password').val();
+            const passwordMatch = $('#passwordMatch').val();
+
+            if (password !== passwordMatch) {
+                $('#passwordMatchAlert').show();
+                $('#passwordMatch').addClass('is-invalid');
+            } else {
+                $('#passwordMatchAlert').hide();
+                $('#passwordMatch').removeClass('is-invalid');
+            }
+        });
+
+        function validateForm() {
+            const username = $('#username').val();
+            const email = $('#email').val();
+            const password = $('#password').val();
+            const passwordMatch = $('#passwordMatch').val();
+
+            const errors = [];
+
+            // If any fields are blank, add the EMPTY_FIELDS error code
+            if (!username || !email || !password || !passwordMatch) {
+                errors.push(EMPTY_FIELDS);
+            }
+
+            // If email address is not a valid format, add INVALID_EMAIL error code
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                errors.push(INVALID_EMAIL);
+            }
+
+            // If the password is not empty but less than 6 characters, add the PASSWORD_TOO_SHORT error code
+            if (password && password.length < 6) {
+                errors.push(PASSWORD_TOO_SHORT);
+            }
+
+            // If password and password are both not empty but they do not match, add the PASSWORD_MISMATCH error code
+            if (password && passwordMatch && password !== passwordMatch) {
+                errors.push(PASSWORD_MISMATCH);
+            }
+
+            // If there are no errors, return true otherwise return false and show the errors
+            if (errors.length > 0) {
+                showErrors(errors);
+                highlightFormFields(errors);
+                return false;
+            } else {
+                return true;
+            }
         }
 
         function register() {
-            event.preventDefault(); // Prevent form submission
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            event.preventDefault();
+            const username = $('#username').val();
+            const email = $('#email').val();
+            const password = $('#password').val();
 
-            if (username && email && password) {
+            if (validateForm())
                 userController.create(username, email, password);
-            } else {
-                showErrors([EMPTY_FIELDS]);
-            }
         }
 
         // Check for errors in the URL parameters
@@ -145,11 +227,11 @@
 
             // Re-populate the form fields if they exist in the URL parameters (except password)
             if (urlParams.has('u')) {
-                document.getElementById('username').value = urlParams.get('u');
+                $('#username').val(urlParams.get('u'));
             }
 
             if (urlParams.has('e')) {
-                document.getElementById('email').value = urlParams.get('e');
+                $('#email').val(urlParams.get('e'));
             }
         });
     </script>
