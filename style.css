@@ -26,7 +26,7 @@ header h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 60%;
+    width: 50%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -43,11 +43,11 @@ header h1 {
 }
 
 .transaction-date {
-    font-size: 1.5em;
+    font-size: 1.2em;
 }
 
 .transaction-name {
-    font-size: 1.2em;
+    font-size: 1.8em;
 }
 
 .transaction-amount {
@@ -60,9 +60,29 @@ header h1 {
     align-items: flex-end;
 }
 
-/* mobile styles */
+.action-button {
+    font-size: .6em;
+}
+
 @media only screen and (max-width: 768px) {
+    header h1 {
+        font-size: 1.5em;
+        text-align: center;
+    }
+
     .transaction {
         width: 80%;
+    }
+
+    .transaction-date {
+        font-size: 1em;
+    }
+    
+    .transaction-name {
+        font-size: 1.2em;
+    }
+    
+    .transaction-amount {
+        font-size: 1em;
     }
 }

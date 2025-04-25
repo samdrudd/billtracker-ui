@@ -241,4 +241,25 @@ class TransactionModel {
             }
         });
     }
+
+    remove(transactionId) {
+        const authToken = localStorage.getItem('billtrackerAuth');
+
+        $.ajax({
+            url: this.route + '/' + transactionId,
+            method: 'DELETE',
+            context: this,
+            headers: {
+                'Authorization': 'Bearer: ' + authToken
+            },
+            success: function(data) {
+                this.transactions = this.transactions.filter(transaction => transaction.id !== transactionId);
+                this.processTransactions();
+                this.notifyListObservers();
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    }
 }

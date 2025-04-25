@@ -28,4 +28,8 @@ class TransactionController {
             }
         );
     }
+
+    deleteTransaction(transactionId) {
+        this.model.remove(transactionId);
+    }
 }

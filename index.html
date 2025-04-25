@@ -257,6 +257,20 @@
 
             transactionController.addTransaction(name, amount, date, repeats, repeatsOn);
         }
+
+        var deleteTransaction = function(transactionId) {
+            event.stopPropagation();
+            bootbox.confirm({
+                closeButton: false,
+                size: 'medium',
+                message: "Are you sure you want to delete this transaction?<br><br>If this is a repeating transaction, <b>all instances</b> will be removed.",
+                callback: function(result) {
+                    if (result) {
+                        transactionController.deleteTransaction(transactionId);
+                    }
+                }
+            });
+        }
         
         $(document).ready(function() {
             updateHeaderDate(moment().month(), moment().year());
